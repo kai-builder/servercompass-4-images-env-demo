@@ -22,6 +22,55 @@ function truncate(value, maxLength) {
   return `${text.slice(0, maxLength - 1)}…`;
 }
 
+function extractThemeColor(rawValue) {
+  if (typeof rawValue !== 'string') {
+    return '#0ea5e9';
+  }
+
+  const trimmed = rawValue.trim();
+  const fallbackMatch = trimmed.match(/:-\s*(#[0-9a-fA-F]{3,8})\s*}/);
+  if (fallbackMatch) {
+    return fallbackMatch[1];
+  }
+
+  const hexMatch = trimmed.match(/#[0-9a-fA-F]{3,8}/);
+  if (hexMatch) {
+    return hexMatch[0];
+  }
+
+  return '#0ea5e9';
+}
+
+function hexToRgb(hexColor) {
+  let normalized = hexColor.replace('#', '');
+  if (normalized.length === 3 || normalized.length === 4) {
+    normalized = normalized
+      .slice(0, 3)
+      .split('')
+      .map((char) => char + char)
+      .join('');
+  } else {
+    normalized = normalized.slice(0, 6);
+  }
+
+  if (normalized.length !== 6) {
+    return { r: 14, g: 165, b: 233 };
+  }
+
+  return {
+    r: Number.parseInt(normalized.slice(0, 2), 16),
+    g: Number.parseInt(normalized.slice(2, 4), 16),
+    b: Number.parseInt(normalized.slice(4, 6), 16)
+  };
+}
+
+function mixColor(hexColor, amount, target = 255) {
+  const { r, g, b } = hexToRgb(hexColor);
+  const clamp = (value) => Math.max(0, Math.min(255, Math.round(value)));
+  const mix = (channel) => clamp(channel + (target - channel) * amount);
+  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+}
+
 function buildEnvSvg(payload) {
   const env = payload && payload.env ? payload.env : {};
   const entries = Object.entries(env).slice(0, 12);
@@ -29,6 +78,10 @@ function buildEnvSvg(payload) {
   const baseHeight = 230;
   const rowHeight = 30;
   const height = Math.max(380, baseHeight + entries.length * rowHeight);
+  const themeColor = extractThemeColor(env.THEME_COLOR);
+  const headerStart = mixColor(themeColor, 0.18, 255);
+  const headerEnd = mixColor(themeColor, 0.08, 255);
+  const keyColor = mixColor(themeColor, 0.42, 255);
 
   const rows = entries
     .map(([key, value], index) => {
@@ -37,7 +90,7 @@ function buildEnvSvg(payload) {
       const displayValue = value == null || value === '' ? '(empty)' : value;
       return `
   <rect x="40" y="${y - 21}" width="900" height="26" rx="8" fill="${bgFill}" />
-  <text x="58" y="${y - 4}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#7dd3fc">${escapeXml(
+  <text x="58" y="${y - 4}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="${keyColor}">${escapeXml(
     truncate(key, 32)
   )}</text>
   <text x="280" y="${y - 4}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#e2e8f0">${escapeXml(
@@ -59,8 +112,8 @@ function buildEnvSvg(payload) {
       <stop offset="100%" stop-color="#172a46" />
     </linearGradient>
     <linearGradient id="header" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0%" stop-color="#0284c7" />
-      <stop offset="100%" stop-color="#0ea5e9" />
+      <stop offset="0%" stop-color="${headerStart}" />
+      <stop offset="100%" stop-color="${headerEnd}" />
     </linearGradient>
   </defs>
   <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)" rx="20" />

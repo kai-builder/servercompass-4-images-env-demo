@@ -26,6 +26,27 @@ const trackedEnvKeys = [
   'API_VERSION'
 ];
 
+function normalizeEnvValue(rawValue) {
+  if (rawValue == null) {
+    return null;
+  }
+
+  const value = String(rawValue).trim();
+  const envReferenceMatch = value.match(/^\$\{([A-Za-z_][A-Za-z0-9_]*)(?:(:?[-?])([^}]*))?\}$/);
+
+  if (!envReferenceMatch) {
+    return value;
+  }
+
+  const [, , modifier, fallbackValue = ''] = envReferenceMatch;
+
+  if (modifier === ':-' || modifier === '-' || modifier === ':?' || modifier === '?') {
+    return fallbackValue;
+  }
+
+  return value;
+}
+
 redisClient.on('error', (error) => {
   console.error('Redis error:', error.message);
 });
@@ -81,7 +102,7 @@ app.get('/health', async (_req, res) => {
 app.get('/env', async (_req, res) => {
   const env = {};
   trackedEnvKeys.forEach((key) => {
-    env[key] = process.env[key] ?? null;
+    env[key] = normalizeEnvValue(process.env[key]);
   });
 
   const [redis, postgres] = await Promise.all([checkRedis(), checkPostgres()]);

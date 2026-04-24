@@ -18,6 +18,19 @@ Open:
 - Frontend: http://localhost:8080
 - API JSON: http://localhost:4000/env
 
+## Public Registry
+
+This repo can publish its custom images to GitHub Container Registry (GHCR) through GitHub Actions.
+
+Published image names for this repository:
+- `ghcr.io/kai-builder/servercompass-4-images-env-demo-frontend:latest`
+- `ghcr.io/kai-builder/servercompass-4-images-env-demo-api:latest`
+
+Workflow file:
+- `.github/workflows/publish-ghcr.yml`
+
+After the first workflow run, make both GHCR packages public in GitHub so Server Compass can pull them anonymously.
+
 ## Test Env Updates
 
 1. Edit `.env` (for example change `DEMO_MESSAGE`).

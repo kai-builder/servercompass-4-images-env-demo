@@ -6,6 +6,44 @@ const generatedAt = document.getElementById('generated-at');
 const serviceStatus = document.getElementById('service-status');
 const envImage = document.getElementById('env-image');
 
+function extractThemeColor(rawValue) {
+  if (typeof rawValue !== 'string') {
+    return '#0ea5e9';
+  }
+
+  const trimmed = rawValue.trim();
+  const fallbackMatch = trimmed.match(/:-\s*(#[0-9a-fA-F]{3,8})\s*}/);
+  if (fallbackMatch) {
+    return fallbackMatch[1];
+  }
+
+  const hexMatch = trimmed.match(/#[0-9a-fA-F]{3,8}/);
+  if (hexMatch) {
+    return hexMatch[0];
+  }
+
+  return '#0ea5e9';
+}
+
+function applyThemeColor(rawValue) {
+  const themeColor = extractThemeColor(rawValue);
+  document.documentElement.style.setProperty('--accent', themeColor);
+}
+
+function normalizeEnvValue(rawValue) {
+  if (typeof rawValue !== 'string') {
+    return rawValue ?? '(empty)';
+  }
+
+  const trimmed = rawValue.trim();
+  const fallbackMatch = trimmed.match(/^\$\{[A-Za-z_][A-Za-z0-9_]*(?:(:?[-?]))([^}]*)\}$/);
+  if (fallbackMatch) {
+    return fallbackMatch[2];
+  }
+
+  return trimmed;
+}
+
 function refreshEnvImage() {
   envImage.src = `/api/env-image.svg?t=${Date.now()}`;
 }
@@ -20,7 +58,7 @@ function renderRows(envObj) {
     keyCell.textContent = key;
 
     const valueCell = document.createElement('td');
-    valueCell.textContent = value ?? '(empty)';
+    valueCell.textContent = normalizeEnvValue(value);
 
     row.appendChild(keyCell);
     row.appendChild(valueCell);
@@ -40,6 +78,7 @@ async function refreshEnv() {
     }
 
     renderRows(payload.env || {});
+    applyThemeColor(payload.env ? payload.env.THEME_COLOR : null);
     hostname.textContent = payload.hostname || '-';
     generatedAt.textContent = payload.generatedAt || '-';
     serviceStatus.textContent = JSON.stringify(payload.services || {}, null, 2);
