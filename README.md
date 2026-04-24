@@ -29,6 +29,12 @@ docker compose up -d --force-recreate api
 
 3. Refresh http://localhost:8080 and click **Refresh env**.
 
+## Server Compass Note
+
+This demo is safe to deploy even when the repo-root `.env` does not exist yet.
+The compose file includes demo defaults for the required Postgres and app env vars,
+so first deploy works on Server Compass before you save custom env vars in the UI.
+
 ## Stop
 
 ```bash
