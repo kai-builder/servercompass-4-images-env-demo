@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ServerCompass Env Demo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>ServerCompass Env Demo</h1>
+      <p class="subtitle">Runtime values from the API container</p>
+
+      <div class="toolbar">
+        <button id="refresh-btn">Refresh env</button>
+        <span id="status">Loading...</span>
+      </div>
+
+      <div class="meta">
+        <div><strong>API Hostname:</strong> <span id="hostname">-</span></div>
+        <div><strong>Generated At:</strong> <span id="generated-at">-</span></div>
+      </div>
+
+      <section class="env-image-panel">
+        <h2>Env Snapshot Image</h2>
+        <img
+          id="env-image"
+          src="/api/env-image.svg"
+          alt="Image render of runtime environment variables from API container"
+        />
+      </section>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ENV Key</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody id="env-rows"></tbody>
+      </table>
+
+      <div class="services">
+        <h2>Dependency checks</h2>
+        <pre id="service-status"></pre>
+      </div>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
